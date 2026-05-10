@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>First Topic</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="container">
+
+      <header class="site-header">
+        <h1>First Topic</h1>
+        <p class="muted">Dark-themed HTML preview — styled via an external stylesheet.</p>
+      </header>
+
+      <nav>
+        <a href="./test.md">Docs (test.md)</a>
+        <a href="../second topic/index.html">Second Topic →</a>
+        <a href="../index.html">Root</a>
+      </nav>
+
+      <main>
+        <div class="card">
+          <strong>CSS Inlining</strong>
+          <p>
+            The viewer resolves <code>&lt;link rel="stylesheet"&gt;</code> tags
+            at render time and inlines the content as a
+            <code>&lt;style&gt;</code> block — external stylesheets load inside
+            the sandboxed iframe without any server.
+          </p>
+        </div>
+
+        <div class="card">
+          <strong>In-App Navigation</strong>
+          <p>
+            Relative <code>&lt;a href&gt;</code> links navigate within the
+            viewer. Clicks are intercepted via <code>postMessage</code> and
+            routed to the correct file — no page reload, no new tab.
+          </p>
+        </div>
+
+        <div class="card">
+          <strong>Typography</strong>
+          <p>
+            This page uses <strong>Space Grotesk</strong> — a geometric
+            sans-serif loaded from Google Fonts. Code snippets fall back to
+            JetBrains Mono to match the editor pane.
+          </p>
+        </div>
+      </main>
+
+      <footer>
+        <small>&copy; 2026</small>
+      </footer>
+
+    </div>
+  </body>
+</html>

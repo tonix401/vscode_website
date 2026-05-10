@@ -6,7 +6,7 @@ export default defineConfig({
   plugins: [
     react(),
     openFolderPlugin({
-      folderPath: "./src/open_folder",
+      folderPath: "./open_folder",
     }),
   ],
 });
