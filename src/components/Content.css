@@ -1,0 +1,124 @@
+.vscode-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-editor);
+  overflow: hidden;
+}
+
+.vscode-content--empty {
+  justify-content: center;
+  align-items: center;
+  color: var(--fg-muted);
+}
+
+.vscode-tab-bar {
+  display: flex;
+  background: var(--bg-tab-bar);
+  height: 35px;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.vscode-tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 14px;
+  height: 100%;
+  font-size: 13px;
+  color: var(--fg-muted);
+  background: var(--bg-tab-inactive);
+  border-right: 1px solid var(--border);
+  user-select: none;
+  white-space: nowrap;
+}
+
+.vscode-tab--active {
+  background: var(--bg-tab-active);
+  color: var(--fg);
+  border-top: 1px solid #007acc;
+}
+
+.vscode-breadcrumb {
+  display: flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 10px;
+  background: var(--bg-editor);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  user-select: none;
+  overflow: hidden;
+}
+
+.vscode-breadcrumb-segment {
+  display: flex;
+  align-items: center;
+}
+
+.vscode-breadcrumb-item {
+  color: var(--fg-muted);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.vscode-breadcrumb-item--file {
+  color: var(--fg);
+}
+
+.vscode-breadcrumb-icon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  margin-right: 3px;
+}
+
+.vscode-breadcrumb-sep {
+  color: var(--fg-dim);
+  font-size: 24px;
+  padding: 0 3px;
+  line-height: 22px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.vscode-editor-area {
+  display: flex;
+  flex: 1;
+  overflow: auto;
+  font-family: var(--font-mono);
+  font-size: var(--font-editor);
+  line-height: var(--line-h);
+}
+
+.vscode-line-numbers {
+  flex-shrink: 0;
+  width: 50px;
+  padding: 0 10px 0 0;
+  text-align: right;
+  color: var(--fg-muted);
+  background: var(--bg-editor);
+  user-select: none;
+  position: sticky;
+  left: 0;
+  z-index: 1;
+}
+
+.vscode-line-number {
+  height: var(--line-h);
+  font-size: 12px;
+}
+
+.vscode-code-area {
+  flex: 1;
+  padding-left: 16px;
+  color: var(--fg);
+  min-width: 0;
+}
+
+.vscode-line {
+  height: var(--line-h);
+  white-space: pre;
+  tab-size: 4;
+}
