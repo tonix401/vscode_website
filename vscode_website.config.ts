@@ -6,6 +6,7 @@ export const configuration: OpenFolderPluginOptions = {
   searchBarText: "Search files by name ($current_sub_folder)",
   websiteTitle: "VSCode Website Template",
   faviconPath: "/blue_dot.svg",
+  windowsDesktop: true,
   activities: [
     {
       name: "Search", // The tooltip text for the activity button

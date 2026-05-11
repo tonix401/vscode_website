@@ -2,8 +2,9 @@ import { useState, useCallback } from "react";
 import "./App.css";
 import { type FileNode, type TreeNode } from "./services/types";
 import folderFiles from "virtual:open-folder-files";
-import { activities } from "virtual:open-folder-config";
+import { activities, windowsDesktop } from "virtual:open-folder-config";
 import { Header } from "./components/Header";
+import { Win11Desktop } from "./components/Win11Desktop";
 import { ActivityBar, type Panel } from "./components/ActivityBar";
 import { Sidebar } from "./components/Sidebar";
 import { Explorer } from "./components/Explorer";
@@ -52,6 +53,8 @@ function App() {
     return findFirstFile(folderFiles);
   });
   const [activePanel, setActivePanel] = useState<Panel>("explorer");
+  const [isWindowClosed, setIsWindowClosed] = useState(false);
+  const handleWindowClose = windowsDesktop ? () => setIsWindowClosed(true) : undefined;
 
   const handleSelect = useCallback((file: FileNode) => {
     localStorage.setItem(STORAGE_KEY, file.path);
@@ -71,9 +74,18 @@ function App() {
 
   const activeActivity = typeof activePanel === "number" ? activities[activePanel] : null;
 
+  if (windowsDesktop && isWindowClosed) {
+    return <Win11Desktop onOpen={() => setIsWindowClosed(false)} />;
+  }
+
   return (
     <div className="vscode-layout">
-      <Header fileName={selectedFile?.name} filePath={selectedFile?.path} />
+      <Header
+        fileName={selectedFile?.name}
+        filePath={selectedFile?.path}
+        onClose={handleWindowClose}
+        onMinimize={handleWindowClose}
+      />
       <div className="vscode-body">
         <ActivityBar
           activities={activities}

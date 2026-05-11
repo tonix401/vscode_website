@@ -27,6 +27,7 @@ export interface OpenFolderPluginOptions {
   websiteTitle?: string;
   faviconPath?: string;
   activities?: CustomActivityConfig[];
+  windowsDesktop?: boolean;
 }
 
 const fileTypeToShikiLang: Partial<Record<FileType, string>> = {
@@ -269,6 +270,7 @@ export function openFolderPlugin(
     websiteTitle,
     faviconPath,
     activities = [],
+    windowsDesktop = false,
   } = options;
 
   const filesModuleId = "virtual:open-folder-files";
@@ -469,6 +471,7 @@ export function openFolderPlugin(
           `export const searchBarText = ${JSON.stringify(resolvedSearchBarText)};`,
           `export const rootFolderName = ${JSON.stringify(rootFolderName)};`,
           `export const activities = ${JSON.stringify(activities.map((a) => resolveActivityText(a, process.cwd())))};`,
+          `export const windowsDesktop = ${JSON.stringify(windowsDesktop)};`,
         ].join("\n");
       }
     },

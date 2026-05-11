@@ -17,4 +17,5 @@ declare module "virtual:open-folder-config" {
   export const searchBarText: string;
   export const rootFolderName: string;
   export const activities: CustomActivity[];
+  export const windowsDesktop: boolean;
 }

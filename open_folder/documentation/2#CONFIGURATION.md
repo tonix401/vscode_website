@@ -46,6 +46,12 @@ The label shown for the top-level folder in the Explorer sidebar. Displayed in a
 
 ---
 
+### `windowsDesktop`
+
+Allows or bans the user from "closing" the vscode window and seeing a windows desktop
+
+---
+
 ### `searchBarText`
 
 |         |                               |

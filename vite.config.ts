@@ -4,6 +4,9 @@ import { openFolderPlugin } from "./src/services/FilesConverterService";
 import { configuration } from "./vscode_website.config";
 
 export default defineConfig({
+  server: {
+    allowedHosts: true,
+  },
   plugins: [
     react(),
     openFolderPlugin(configuration),
