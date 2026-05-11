@@ -4,6 +4,7 @@ import { openFolderPlugin } from "./src/services/FilesConverterService";
 import { configuration } from "./vscode_website.config";
 
 export default defineConfig({
+  base: process.env.NODE_ENV === "production" ? "/vscode_website/" : "/",
   server: {
     allowedHosts: true,
   },
