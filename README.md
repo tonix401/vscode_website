@@ -80,3 +80,8 @@ TypeScript, TSX, JavaScript, JSX, HTML, CSS, JSON, Markdown, Python, Rust, Go, J
 - Vite 8
 - Shiki (syntax highlighting)
 - TypeScript
+
+
+### a little test
+
+[Docs](.docs/DOCUMENTATION.md)
