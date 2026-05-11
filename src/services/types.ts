@@ -16,6 +16,7 @@ export interface FileNode {
 export interface FolderNode {
   kind: "folder";
   name: string;
+  defaultOpen?: boolean;
   children: TreeNode[];
 }
 

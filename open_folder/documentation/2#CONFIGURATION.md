@@ -123,3 +123,17 @@ open_folder/
 The prefix must be one or more digits followed by `#`. It is stripped before the name is displayed anywhere in the UI — the explorer, tab bar, breadcrumb, and browser title all show the clean name without the prefix.
 
 Prefixes can be added to folders as well as files. Folders are still shown before files at each level (VSCode's default behaviour).
+
+To control whether a folder starts expanded or collapsed, add `ex#` (expanded) or `co#` (collapsed) after the numeric prefix:
+
+```
+open_folder/
+  001#co#advanced/
+    001#config.md
+  002#ex#api/
+    001#reference.md
+```
+
+If you use both prefixes, the numeric prefix must come first. For example, `001#co#advanced/` is valid, but `co#001#advanced/` is invalid and will fail the build.
+
+These prefixes are only read on folder names.

@@ -66,19 +66,6 @@ const PREVIEW_ERROR_SCRIPT =
 
 const PREVIEW_ERROR_EL = '<div id="__e" style="display:none;color:#f88;font-family:monospace;font-size:13px;padding:8px;white-space:pre-wrap"></div>';
 
-function rewriteEsmImports(code: string, rewrites: Record<string, string>): string {
-  return Object.entries(rewrites).reduce(
-    (c, [from, to]) => c.replace(new RegExp(`from ['"]${from.replace("/", "\\/")}['"]`, "g"), `from '${to}'`),
-    code,
-  );
-}
-
-async function blobImport(code: string): Promise<Record<string, unknown>> {
-  const blob = new Blob([code], { type: "text/javascript" });
-  const url = URL.createObjectURL(blob);
-  try { return await import(/* @vite-ignore */ url); } finally { URL.revokeObjectURL(url); }
-}
-
 function buildJsxSrcDoc(
   code: string,
   filePath: string,
@@ -289,7 +276,8 @@ export function Content({ file, onNavigate, resolveFile }: ContentProps) {
   // Listen for navigation postMessages from the HTML iframe.
   // Validates source so only our iframe can trigger navigation.
   useEffect(() => {
-    if (file?.type !== "html" || !onNavigate) return;
+    const previewableTypes = ["html", "tsx", "jsx", "vue"] as const;
+  if (!onNavigate || !previewableTypes.includes(file?.type as typeof previewableTypes[number])) return;
 
     const handler = (e: MessageEvent) => {
       if (e.source !== iframeRef.current?.contentWindow) return;
@@ -312,7 +300,7 @@ export function Content({ file, onNavigate, resolveFile }: ContentProps) {
   }
 
   const lines = file.content.split("\n");
-  const isPreviewable = file.type === "md" || file.type === "html";
+  const isPreviewable = file.type === "md" || file.type === "html" || file.type === "tsx" || file.type === "jsx" || file.type === "vue";
 
   const tabBar = (
     <div className="vscode-tab-bar">
@@ -410,6 +398,42 @@ export function Content({ file, onNavigate, resolveFile }: ContentProps) {
             ref={iframeRef}
             className="vscode-html-area"
             srcDoc={HTML_NAV_SCRIPT + processed}
+            sandbox="allow-scripts"
+            title={file.name}
+          />
+        )}
+      </main>
+    );
+  }
+
+  if (file.type === "tsx" || file.type === "jsx") {
+    return (
+      <main className="vscode-content">
+        {tabBar}
+        <Breadcrumb file={file} />
+        {viewMode === "code" ? codeView : (
+          <iframe
+            ref={iframeRef}
+            className="vscode-html-area"
+            srcDoc={buildJsxSrcDoc(file.content, file.path, resolveFile)}
+            sandbox="allow-scripts"
+            title={file.name}
+          />
+        )}
+      </main>
+    );
+  }
+
+  if (file.type === "vue") {
+    return (
+      <main className="vscode-content">
+        {tabBar}
+        <Breadcrumb file={file} />
+        {viewMode === "code" ? codeView : (
+          <iframe
+            ref={iframeRef}
+            className="vscode-html-area"
+            srcDoc={buildVueSrcDoc(file.content, file.path, resolveFile)}
             sandbox="allow-scripts"
             title={file.name}
           />

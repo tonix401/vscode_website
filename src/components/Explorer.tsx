@@ -11,12 +11,14 @@ interface ExplorerProps {
   onSelect: (file: FileNode) => void;
 }
 
-function collectFolderPaths(nodes: TreeNode[], prefix: string, out: Set<string>) {
+function collectOpenFolderPaths(nodes: TreeNode[], prefix: string, out: Set<string>) {
   for (const node of nodes) {
     if (node.kind === "folder") {
       const path = prefix ? `${prefix}/${node.name}` : node.name;
-      out.add(path);
-      collectFolderPaths(node.children, path, out);
+      if (node.defaultOpen !== false) {
+        out.add(path);
+      }
+      collectOpenFolderPaths(node.children, path, out);
     }
   }
 }
@@ -24,7 +26,7 @@ function collectFolderPaths(nodes: TreeNode[], prefix: string, out: Set<string>)
 export function Explorer({ nodes, selectedFile, onSelect }: ExplorerProps) {
   const [openFolders, setOpenFolders] = useState<Set<string>>(() => {
     const paths = new Set(["__root__"]);
-    collectFolderPaths(nodes, "", paths);
+    collectOpenFolderPaths(nodes, "", paths);
     return paths;
   });
 

@@ -80,8 +80,22 @@ export function collectMdCodeFenceLangs(content: string): FileType[] {
   return result;
 }
 
+const SORT_PREFIX = /^\d+#/;
+const FOLDER_STATE_PREFIX = /^(co|ex)#/;
+
 function stripSortPrefix(name: string): string {
-  return name.replace(/^\d+#/, "");
+  return name.replace(SORT_PREFIX, "");
+}
+
+function parseFolderName(name: string): { displayName: string; defaultOpen: boolean } {
+  const withoutOrder = stripSortPrefix(name);
+  if (withoutOrder.startsWith("co#")) {
+    return { displayName: withoutOrder.slice(3), defaultOpen: false };
+  }
+  if (withoutOrder.startsWith("ex#")) {
+    return { displayName: withoutOrder.slice(3), defaultOpen: true };
+  }
+  return { displayName: withoutOrder, defaultOpen: true };
 }
 
 function findExtensionlessFiles(dirPath: string, relPath: string = ""): string[] {
@@ -116,11 +130,35 @@ function findMalformedPrefixes(dirPath: string, relPath: string = ""): string[] 
   }
   for (const entry of entries) {
     const entryRel = relPath ? `${relPath}/${entry.name}` : entry.name;
-    if (/^\w+#/.test(entry.name) && !/^\d+#/.test(entry.name)) {
+    if (
+      /^\w+#/.test(entry.name) &&
+      !SORT_PREFIX.test(entry.name) &&
+      !FOLDER_STATE_PREFIX.test(entry.name)
+    ) {
       results.push(entryRel);
     }
     if (entry.isDirectory()) {
       results.push(...findMalformedPrefixes(resolve(dirPath, entry.name), entryRel));
+    }
+  }
+  return results;
+}
+
+function findInvalidFolderStatePrefixOrder(dirPath: string, relPath: string = ""): string[] {
+  const results: string[] = [];
+  let entries;
+  try {
+    entries = readdirSync(dirPath, { withFileTypes: true });
+  } catch {
+    return results;
+  }
+  for (const entry of entries) {
+    const entryRel = relPath ? `${relPath}/${entry.name}` : entry.name;
+    if (entry.isDirectory()) {
+      if (/^(co|ex)#\d+#/.test(entry.name)) {
+        results.push(entryRel);
+      }
+      results.push(...findInvalidFolderStatePrefixOrder(resolve(dirPath, entry.name), entryRel));
     }
   }
   return results;
@@ -134,16 +172,19 @@ function readTree(dirPath: string, prefix: string = ""): TreeNode[] {
 
     for (const entry of entries) {
       const fullPath = resolve(dirPath, entry.name);
-      const displayName = stripSortPrefix(entry.name);
-      const entryPath = prefix ? `${prefix}/${displayName}` : displayName;
 
       if (entry.isDirectory()) {
+        const { displayName: folderName, defaultOpen } = parseFolderName(entry.name);
+        const folderPath = prefix ? `${prefix}/${folderName}` : folderName;
         nodes.push({
           kind: "folder",
-          name: displayName,
-          children: readTree(fullPath, entryPath),
+          name: folderName,
+          defaultOpen,
+          children: readTree(fullPath, folderPath),
         });
       } else {
+        const displayName = stripSortPrefix(entry.name);
+        const entryPath = prefix ? `${prefix}/${displayName}` : displayName;
         const type = getFileType(entry.name);
         nodes.push({
           kind: "file",
@@ -259,6 +300,16 @@ export function openFolderPlugin(
             `  Fix: Use only digits before "#", e.g. rename "0a2#file.md" to "002#file.md".`,
         );
       }
+
+      const invalidFolderState = findInvalidFolderStatePrefixOrder(absFolder);
+      if (invalidFolderState.length > 0) {
+        this.error(
+          `Folder state prefixes must come after the numeric sort prefix, if present.\n` +
+            `  Use "001#co#folder" or "001#ex#folder" (or omit the number).\n` +
+            `  Invalid folder names:\n` +
+            invalidFolderState.map((p) => `  ${p}`).join("\n"),
+        );
+      }
     },
 
     resolveId(id) {
@@ -268,7 +319,18 @@ export function openFolderPlugin(
     },
 
     load(id) {
-      const tree = readTree(resolve(folderPath));
+      const absFolder = resolve(folderPath);
+      const invalidFolderState = findInvalidFolderStatePrefixOrder(absFolder);
+      if (invalidFolderState.length > 0) {
+        throw new Error(
+          `Folder state prefixes must come after the numeric sort prefix, if present.\n` +
+            `  Use "001#co#folder" or "001#ex#folder" (or omit the number).\n` +
+            `  Invalid folder names:\n` +
+            invalidFolderState.map((p) => `  ${p}`).join("\n"),
+        );
+      }
+
+      const tree = readTree(absFolder);
 
       if (id === resolvedFilesId) {
         return `export default ${JSON.stringify(tree)};`;

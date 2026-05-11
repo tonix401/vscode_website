@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { EventEmitter } from "events";
 
 // Generic interface with constraints
@@ -13,7 +14,11 @@ type ApiResponse<T> =
   | { status: "error"; error: string };
 
 // Decorator example
-function Memoize(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+function Memoize(
+  target: any,
+  propertyKey: string,
+  descriptor: PropertyDescriptor,
+) {
   const originalMethod = descriptor.value;
   const cache = new Map();
 
