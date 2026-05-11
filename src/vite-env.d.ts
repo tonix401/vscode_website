@@ -13,6 +13,8 @@ declare module "virtual:open-folder-langs" {
 }
 
 declare module "virtual:open-folder-config" {
+  import { type CustomActivity } from "./services/types";
   export const searchBarText: string;
   export const rootFolderName: string;
+  export const activities: CustomActivity[];
 }

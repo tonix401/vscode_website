@@ -12,12 +12,21 @@ import { langHintToFileType } from "../utils/fileTypes";
 
 export type { FileNode, FolderNode, TreeNode } from "./types";
 
+export interface CustomActivityConfig {
+  name: string;
+  iconPath: string;
+  title: string;
+  text?: string;
+  textFile?: string;
+}
+
 export interface OpenFolderPluginOptions {
   folderPath?: string;
   searchBarText?: string;
   rootFolderName?: string;
   websiteTitle?: string;
   faviconPath?: string;
+  activities?: CustomActivityConfig[];
 }
 
 const fileTypeToShikiLang: Partial<Record<FileType, string>> = {
@@ -25,8 +34,8 @@ const fileTypeToShikiLang: Partial<Record<FileType, string>> = {
   css: "@shikijs/langs/css",
   js: "@shikijs/langs/javascript",
   ts: "@shikijs/langs/typescript",
-  tsx: "@shikijs/langs/tsx",
-  jsx: "@shikijs/langs/jsx",
+  tsx: "@shikijs/langs/typescript",
+  jsx: "@shikijs/langs/javascript",
   md: "@shikijs/langs/markdown",
   py: "@shikijs/langs/python",
   json: "@shikijs/langs/json",
@@ -42,8 +51,7 @@ const fileTypeToShikiLang: Partial<Record<FileType, string>> = {
   sql: "@shikijs/langs/sql",
   xml: "@shikijs/langs/xml",
   toml: "@shikijs/langs/toml",
-  vue: "@shikijs/langs/vue",
-  svelte: "@shikijs/langs/svelte",
+  vue: "@shikijs/langs/html",
 };
 
 function collectFileTypes(nodes: TreeNode[]): Set<FileType> {
@@ -52,7 +60,8 @@ function collectFileTypes(nodes: TreeNode[]): Set<FileType> {
     if (node.kind === "file") {
       types.add(node.type);
       if (node.type === "md") {
-        for (const lang of collectMdCodeFenceLangs(node.content)) types.add(lang);
+        for (const lang of collectMdCodeFenceLangs(node.content))
+          types.add(lang);
       }
     } else {
       for (const t of collectFileTypes(node.children)) types.add(t);
@@ -87,7 +96,10 @@ function stripSortPrefix(name: string): string {
   return name.replace(SORT_PREFIX, "");
 }
 
-function parseFolderName(name: string): { displayName: string; defaultOpen: boolean } {
+function parseFolderName(name: string): {
+  displayName: string;
+  defaultOpen: boolean;
+} {
   const withoutOrder = stripSortPrefix(name);
   if (withoutOrder.startsWith("co#")) {
     return { displayName: withoutOrder.slice(3), defaultOpen: false };
@@ -98,7 +110,10 @@ function parseFolderName(name: string): { displayName: string; defaultOpen: bool
   return { displayName: withoutOrder, defaultOpen: true };
 }
 
-function findExtensionlessFiles(dirPath: string, relPath: string = ""): string[] {
+function findExtensionlessFiles(
+  dirPath: string,
+  relPath: string = "",
+): string[] {
   const results: string[] = [];
   let entries;
   try {
@@ -109,7 +124,9 @@ function findExtensionlessFiles(dirPath: string, relPath: string = ""): string[]
   for (const entry of entries) {
     const entryRel = relPath ? `${relPath}/${entry.name}` : entry.name;
     if (entry.isDirectory()) {
-      results.push(...findExtensionlessFiles(resolve(dirPath, entry.name), entryRel));
+      results.push(
+        ...findExtensionlessFiles(resolve(dirPath, entry.name), entryRel),
+      );
     } else {
       const displayName = stripSortPrefix(entry.name);
       if (!displayName.startsWith(".") && extname(displayName) === "") {
@@ -120,7 +137,10 @@ function findExtensionlessFiles(dirPath: string, relPath: string = ""): string[]
   return results;
 }
 
-function findMalformedPrefixes(dirPath: string, relPath: string = ""): string[] {
+function findMalformedPrefixes(
+  dirPath: string,
+  relPath: string = "",
+): string[] {
   const results: string[] = [];
   let entries;
   try {
@@ -138,13 +158,18 @@ function findMalformedPrefixes(dirPath: string, relPath: string = ""): string[] 
       results.push(entryRel);
     }
     if (entry.isDirectory()) {
-      results.push(...findMalformedPrefixes(resolve(dirPath, entry.name), entryRel));
+      results.push(
+        ...findMalformedPrefixes(resolve(dirPath, entry.name), entryRel),
+      );
     }
   }
   return results;
 }
 
-function findInvalidFolderStatePrefixOrder(dirPath: string, relPath: string = ""): string[] {
+function findInvalidFolderStatePrefixOrder(
+  dirPath: string,
+  relPath: string = "",
+): string[] {
   const results: string[] = [];
   let entries;
   try {
@@ -158,7 +183,12 @@ function findInvalidFolderStatePrefixOrder(dirPath: string, relPath: string = ""
       if (/^(co|ex)#\d+#/.test(entry.name)) {
         results.push(entryRel);
       }
-      results.push(...findInvalidFolderStatePrefixOrder(resolve(dirPath, entry.name), entryRel));
+      results.push(
+        ...findInvalidFolderStatePrefixOrder(
+          resolve(dirPath, entry.name),
+          entryRel,
+        ),
+      );
     }
   }
   return results;
@@ -174,7 +204,9 @@ function readTree(dirPath: string, prefix: string = ""): TreeNode[] {
       const fullPath = resolve(dirPath, entry.name);
 
       if (entry.isDirectory()) {
-        const { displayName: folderName, defaultOpen } = parseFolderName(entry.name);
+        const { displayName: folderName, defaultOpen } = parseFolderName(
+          entry.name,
+        );
         const folderPath = prefix ? `${prefix}/${folderName}` : folderName;
         nodes.push({
           kind: "folder",
@@ -206,6 +238,27 @@ function readTree(dirPath: string, prefix: string = ""): TreeNode[] {
   }
 }
 
+function resolveActivityText(
+  activity: CustomActivityConfig,
+  root: string,
+): { name: string; iconPath: string; title: string; text: string } {
+  if (activity.textFile !== undefined) {
+    const absPath = resolve(root, activity.textFile);
+    return {
+      name: activity.name,
+      iconPath: activity.iconPath,
+      title: activity.title,
+      text: readFileSync(absPath, "utf-8"),
+    };
+  }
+  return {
+    name: activity.name,
+    iconPath: activity.iconPath,
+    title: activity.title,
+    text: activity.text ?? "",
+  };
+}
+
 export function openFolderPlugin(
   options: OpenFolderPluginOptions = {},
 ): Plugin {
@@ -215,6 +268,7 @@ export function openFolderPlugin(
     rootFolderName = "WEBSITE",
     websiteTitle,
     faviconPath,
+    activities = [],
   } = options;
 
   const filesModuleId = "virtual:open-folder-files";
@@ -247,18 +301,18 @@ export function openFolderPlugin(
       if (rootFolderName.trim() === "") {
         this.warn(
           `rootFolderName is an empty string.\n` +
-          `  The explorer sidebar will show the root folder with no label.\n` +
-          `  Fix: Set it to a non-empty string, e.g. rootFolderName: "MY PROJECT".\n` +
-          `  Or remove the option entirely — it defaults to "WEBSITE".`,
+            `  The explorer sidebar will show the root folder with no label.\n` +
+            `  Fix: Set it to a non-empty string, e.g. rootFolderName: "MY PROJECT".\n` +
+            `  Or remove the option entirely — it defaults to "WEBSITE".`,
         );
       }
 
       if (searchBarText.trim() === "") {
         this.warn(
           `searchBarText is an empty string.\n` +
-          `  The search bar will appear with no placeholder text.\n` +
-          `  Fix: Set it to a non-empty string, e.g. searchBarText: "Search files (⌘P)".\n` +
-          `  Or remove the option entirely — it defaults to "Search files by name (⌘P)".`,
+            `  The search bar will appear with no placeholder text.\n` +
+            `  Fix: Set it to a non-empty string, e.g. searchBarText: "Search files (⌘P)".\n` +
+            `  Or remove the option entirely — it defaults to "Search files by name (⌘P)".`,
         );
       }
 
@@ -283,11 +337,66 @@ export function openFolderPlugin(
         );
       }
 
+      for (const activity of activities) {
+        const label = activity.name.trim() || "(unnamed activity)";
+
+        if (activity.name.trim() === "") {
+          this.warn(
+            `An activity has an empty "name".\n` +
+              `  The tooltip and accessibility label will be blank.\n` +
+              `  Fix: Set "name" to a non-empty string, e.g. name: "Search".`,
+          );
+        }
+
+        if (activity.iconPath.trim() === "") {
+          this.warn(
+            `Activity "${label}" has an empty "iconPath".\n` +
+              `  No icon will be shown in the activity bar.\n` +
+              `  Fix: Set "iconPath" to a codicon name (e.g. "search") or an image path.`,
+          );
+        }
+
+        if (activity.title.trim() === "") {
+          this.warn(
+            `Activity "${label}" has an empty "title".\n` +
+              `  The panel header will be blank.\n` +
+              `  Fix: Set "title" to a non-empty string, e.g. title: "SEARCH".`,
+          );
+        }
+
+        if (activity.text === undefined && activity.textFile === undefined) {
+          this.warn(
+            `Activity "${label}" specifies neither "text" nor "textFile".\n` +
+              `  The panel body will be empty.\n` +
+              `  Fix: Add "text" with an inline Markdown string, or "textFile" with a path to a .md file.`,
+          );
+        }
+
+        if (activity.text !== undefined && activity.textFile !== undefined) {
+          this.warn(
+            `Activity "${label}" specifies both "text" and "textFile".\n` +
+              `  "textFile" will take precedence. Remove one of them.`,
+          );
+        }
+
+        if (activity.textFile !== undefined) {
+          const absTextFile = resolve(activity.textFile);
+          if (!existsSync(absTextFile)) {
+            this.error(
+              `Activity "${label}" textFile "${activity.textFile}" does not exist.\n` +
+                `  This path resolves to: ${absTextFile}\n` +
+                `  Fix: Create the file or correct the path.`,
+            );
+          }
+        }
+      }
+
       const extensionless = findExtensionlessFiles(absFolder);
       if (extensionless.length > 0) {
         this.warn(
           `The following files have no extension and will be shown as plain text without syntax highlighting:\n` +
-            extensionless.map((p) => `  ${p}`).join("\n") + "\n" +
+            extensionless.map((p) => `  ${p}`).join("\n") +
+            "\n" +
             `  Fix: Add an extension that matches the file's content, e.g. rename "LICENCE" to "LICENCE.md".`,
         );
       }
@@ -296,7 +405,8 @@ export function openFolderPlugin(
       if (malformed.length > 0) {
         this.warn(
           `The following files/folders have a malformed sort prefix (expected digits only before "#"):\n` +
-            malformed.map((p) => `  ${p}`).join("\n") + "\n" +
+            malformed.map((p) => `  ${p}`).join("\n") +
+            "\n" +
             `  Fix: Use only digits before "#", e.g. rename "0a2#file.md" to "002#file.md".`,
         );
       }
@@ -338,9 +448,11 @@ export function openFolderPlugin(
 
       if (id === resolvedLangsId) {
         const types = collectFileTypes(tree);
-        const pkgs = [...types]
-          .map((t) => fileTypeToShikiLang[t])
-          .filter((p): p is string => p !== undefined);
+        const pkgs = [...new Set(
+          [...types]
+            .map((t) => fileTypeToShikiLang[t])
+            .filter((p): p is string => p !== undefined),
+        )];
         const imports = pkgs
           .map((pkg) => `  import(${JSON.stringify(pkg)})`)
           .join(",\n");
@@ -356,18 +468,30 @@ export function openFolderPlugin(
         return [
           `export const searchBarText = ${JSON.stringify(resolvedSearchBarText)};`,
           `export const rootFolderName = ${JSON.stringify(rootFolderName)};`,
+          `export const activities = ${JSON.stringify(activities.map((a) => resolveActivityText(a, process.cwd())))};`,
         ].join("\n");
       }
     },
 
     configureServer(server) {
       const absFolder = resolve(folderPath);
+      const absTextFiles = activities
+        .filter((a) => a.textFile !== undefined)
+        .map((a) => resolve(a.textFile!));
+
       server.watcher.add(absFolder);
+      for (const f of absTextFiles) server.watcher.add(f);
 
       server.watcher.on("all", (_event, changedPath) => {
-        if (!changedPath.startsWith(absFolder)) return;
+        const inFolder = changedPath.startsWith(absFolder);
+        const isTextFile = absTextFiles.includes(changedPath);
+        if (!inFolder && !isTextFile) return;
 
-        for (const id of [resolvedFilesId, resolvedLangsId, resolvedConfigId]) {
+        const ids = inFolder
+          ? [resolvedFilesId, resolvedLangsId, resolvedConfigId]
+          : [resolvedConfigId];
+
+        for (const id of ids) {
           const mod = server.moduleGraph.getModuleById(id);
           if (mod) server.moduleGraph.invalidateModule(mod);
         }

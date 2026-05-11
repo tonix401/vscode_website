@@ -1,8 +1,27 @@
 export type FileType =
-  | "html" | "css" | "js" | "ts" | "tsx" | "jsx"
-  | "md" | "py" | "json" | "yaml" | "rs" | "go" | "sh"
-  | "php" | "rb" | "c" | "cpp" | "java"
-  | "sql" | "xml" | "toml" | "vue" | "svelte"
+  | "html"
+  | "css"
+  | "js"
+  | "ts"
+  | "tsx"
+  | "jsx"
+  | "md"
+  | "py"
+  | "json"
+  | "yaml"
+  | "rs"
+  | "go"
+  | "sh"
+  | "php"
+  | "rb"
+  | "c"
+  | "cpp"
+  | "java"
+  | "sql"
+  | "xml"
+  | "toml"
+  | "vue"
+  | "svelte"
   | "unsupported";
 
 export interface FileNode {
@@ -21,3 +40,10 @@ export interface FolderNode {
 }
 
 export type TreeNode = FileNode | FolderNode;
+
+export interface CustomActivity {
+  name: string;
+  iconPath: string;
+  title: string;
+  text: string;
+}

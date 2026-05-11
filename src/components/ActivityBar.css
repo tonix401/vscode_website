@@ -57,6 +57,11 @@
   filter: invert(1);
 }
 
+.vscode-activity-btn .codicon {
+  font-size: 24px;
+  color: inherit;
+}
+
 .vscode-activity-btn--active::before {
   content: "";
   position: absolute;

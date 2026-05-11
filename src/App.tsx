@@ -2,10 +2,12 @@ import { useState, useCallback } from "react";
 import "./App.css";
 import { type FileNode, type TreeNode } from "./services/types";
 import folderFiles from "virtual:open-folder-files";
+import { activities } from "virtual:open-folder-config";
 import { Header } from "./components/Header";
 import { ActivityBar, type Panel } from "./components/ActivityBar";
 import { Sidebar } from "./components/Sidebar";
 import { Explorer } from "./components/Explorer";
+import { CustomPanel } from "./components/CustomPanel";
 import { Content } from "./components/Content";
 import { Footer } from "./components/Footer";
 
@@ -38,15 +40,6 @@ function resolvePath(fromPath: string, href: string): string {
   return dir.join("/");
 }
 
-function PlaceholderPanel({ title, message }: { title: string; message: string }) {
-  return (
-    <div className="vscode-panel-placeholder">
-      <div className="vscode-explorer-heading">{title}</div>
-      <p className="vscode-panel-placeholder-msg">{message}</p>
-    </div>
-  );
-}
-
 const STORAGE_KEY = "vscode-website:selectedFilePath";
 
 function App() {
@@ -76,11 +69,17 @@ function App() {
     return findFileByPath(folderFiles, resolvePath(fromPath, href));
   }, []);
 
+  const activeActivity = typeof activePanel === "number" ? activities[activePanel] : null;
+
   return (
     <div className="vscode-layout">
       <Header fileName={selectedFile?.name} filePath={selectedFile?.path} />
       <div className="vscode-body">
-        <ActivityBar activePanel={activePanel} onPanelChange={setActivePanel} />
+        <ActivityBar
+          activities={activities}
+          activePanel={activePanel}
+          onPanelChange={setActivePanel}
+        />
         <Sidebar>
           {activePanel === "explorer" && (
             <Explorer
@@ -89,17 +88,8 @@ function App() {
               onSelect={handleSelect}
             />
           )}
-          {activePanel === "search" && (
-            <PlaceholderPanel title="SEARCH" message="Type to search across files." />
-          )}
-          {activePanel === "scm" && (
-            <PlaceholderPanel title="SOURCE CONTROL" message="No source control providers registered." />
-          )}
-          {activePanel === "debug" && (
-            <PlaceholderPanel title="RUN AND DEBUG" message="No launch configuration." />
-          )}
-          {activePanel === "extensions" && (
-            <PlaceholderPanel title="EXTENSIONS" message="Search extensions in Marketplace." />
+          {activeActivity && (
+            <CustomPanel title={activeActivity.title} text={activeActivity.text} />
           )}
         </Sidebar>
         <Content file={selectedFile} onNavigate={handleNavigate} resolveFile={resolveFile} />

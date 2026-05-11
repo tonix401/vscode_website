@@ -1,6 +1,10 @@
 import { useState } from "react";
 import "./Explorer.css";
-import { type FileNode, type FolderNode, type TreeNode } from "../services/types";
+import {
+  type FileNode,
+  type FolderNode,
+  type TreeNode,
+} from "../services/types";
 import { SetiIcon } from "./SetiIcon";
 import { rootFolderName } from "virtual:open-folder-config";
 import chevronRightIcon from "@vscode/codicons/src/icons/chevron-right.svg";
@@ -11,7 +15,11 @@ interface ExplorerProps {
   onSelect: (file: FileNode) => void;
 }
 
-function collectOpenFolderPaths(nodes: TreeNode[], prefix: string, out: Set<string>) {
+function collectOpenFolderPaths(
+  nodes: TreeNode[],
+  prefix: string,
+  out: Set<string>,
+) {
   for (const node of nodes) {
     if (node.kind === "folder") {
       const path = prefix ? `${prefix}/${node.name}` : node.name;
@@ -45,7 +53,11 @@ export function Explorer({ nodes, selectedFile, onSelect }: ExplorerProps) {
       <div className="vscode-explorer-heading">EXPLORER</div>
       <ul className="vscode-file-list">
         <li className="vscode-folder-item" onClick={() => toggle("__root__")}>
-          <img src={chevronRightIcon} alt="" className={`vscode-caret${rootOpen ? " vscode-caret--open" : ""}`} />
+          <img
+            src={chevronRightIcon}
+            alt=""
+            className={`vscode-caret${rootOpen ? " vscode-caret--open" : ""}`}
+          />
           <span className="vscode-file-name">{rootFolderName}</span>
         </li>
         {rootOpen &&
@@ -81,7 +93,15 @@ interface TreeItemProps {
   onToggle: (path: string) => void;
 }
 
-function TreeItem({ node, path, depth, selectedFile, onSelect, openFolders, onToggle }: TreeItemProps) {
+function TreeItem({
+  node,
+  path,
+  depth,
+  selectedFile,
+  onSelect,
+  openFolders,
+  onToggle,
+}: TreeItemProps) {
   const indent = depth * 12;
 
   if (node.kind === "file") {
@@ -98,7 +118,17 @@ function TreeItem({ node, path, depth, selectedFile, onSelect, openFolders, onTo
     );
   }
 
-  return <FolderItem node={node} path={path} depth={depth} selectedFile={selectedFile} onSelect={onSelect} openFolders={openFolders} onToggle={onToggle} />;
+  return (
+    <FolderItem
+      node={node}
+      path={path}
+      depth={depth}
+      selectedFile={selectedFile}
+      onSelect={onSelect}
+      openFolders={openFolders}
+      onToggle={onToggle}
+    />
+  );
 }
 
 interface FolderItemProps {
@@ -111,7 +141,15 @@ interface FolderItemProps {
   onToggle: (path: string) => void;
 }
 
-function FolderItem({ node, path, depth, selectedFile, onSelect, openFolders, onToggle }: FolderItemProps) {
+function FolderItem({
+  node,
+  path,
+  depth,
+  selectedFile,
+  onSelect,
+  openFolders,
+  onToggle,
+}: FolderItemProps) {
   const isOpen = openFolders.has(path);
   const indent = depth * 12;
 
@@ -122,7 +160,11 @@ function FolderItem({ node, path, depth, selectedFile, onSelect, openFolders, on
         style={{ paddingLeft: `${indent + 4}px` }}
         onClick={() => onToggle(path)}
       >
-        <img src={chevronRightIcon} alt="" className={`vscode-caret${isOpen ? " vscode-caret--open" : ""}`} />
+        <img
+          src={chevronRightIcon}
+          alt=""
+          className={`vscode-caret${isOpen ? " vscode-caret--open" : ""}`}
+        />
         <span className="vscode-file-name">{node.name}</span>
       </li>
       {isOpen &&

@@ -51,125 +51,6 @@ const HTML_NAV_SCRIPT =
   "e.preventDefault();window.parent.postMessage({navigate:h},'*');" +
   "});</script>";
 
-const PREVIEW_BASE_STYLES =
-  "<style>html{background:transparent}body{margin:0;padding:8px;font-family:sans-serif;box-sizing:border-box}</style>";
-
-const PREVIEW_ERROR_SCRIPT =
-  "<script>" +
-  "function __err(m){" +
-  "var e=document.getElementById('__e');e.style.display='block';" +
-  "var r=document.getElementById('__r');if(r)r.style.display='none';" +
-  "e.textContent=String(m);}" +
-  "window.addEventListener('unhandledrejection',function(e){__err(e.reason);});" +
-  "window.addEventListener('error',function(e){if(!e.filename||e.filename.startsWith('blob:'))__err(e.message);});" +
-  "</script>";
-
-const PREVIEW_ERROR_EL = '<div id="__e" style="display:none;color:#f88;font-family:monospace;font-size:13px;padding:8px;white-space:pre-wrap"></div>';
-
-function buildJsxSrcDoc(
-  code: string,
-  filePath: string,
-  resolveFile: ((from: string, href: string) => FileNode | null) | undefined,
-): string {
-  const cssBlocks: string[] = [];
-  let processed = code.replace(
-    /^import\s+['"]([^'"]+\.css)['"]\s*;?\s*$/gm,
-    (_, href) => {
-      if (resolveFile && isSafeRelativeHref(href)) {
-        const f = resolveFile(filePath, href);
-        if (f) { cssBlocks.push(f.content); return ""; }
-      }
-      return "";
-    },
-  );
-
-  processed = processed
-    .replace(/\bexport\s+default\s+function\s+(\w+)/g, "const __default_export = function $1")
-    .replace(/\bexport\s+default\s+class\s+(\w+)/g, "const __default_export = class $1")
-    .replace(/\bexport\s+default\s+/g, "const __default_export = ");
-  processed = processed.replace(/^export\s+(const|let|var|function|class|type|interface|enum)\s/gm, "$1 ");
-  processed = processed.replace(/^export\s*\*.*$/gm, "");
-  processed = processed.replace(/^export\s*\{[^}]*\}\s*;?\s*$/gm, "");
-
-  const styleBlock = cssBlocks.map(c => `<style>${c}</style>`).join("\n");
-  const src = JSON.stringify(processed);
-
-  const mountScript =
-    "(async function(){" +
-    "var rdc=await import('https://esm.sh/react-dom@18/client');" +
-    "var r=await import('https://esm.sh/react@18');" +
-    "if(typeof __default_export!=='undefined')" +
-    "rdc.createRoot(document.getElementById('__r')).render(r.createElement(__default_export,{}));" +
-    "})().catch(__err);";
-
-  return `<!DOCTYPE html><html><head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-${PREVIEW_BASE_STYLES}${styleBlock}
-${HTML_NAV_SCRIPT}${PREVIEW_ERROR_SCRIPT}
-<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-</head><body>
-<div id="__r"></div>${PREVIEW_ERROR_EL}
-<script>
-(function(){
-var raw=${src};
-var out;
-try{out=Babel.transform(raw,{filename:'component.tsx',presets:[['typescript',{allExtensions:true,isTSX:true}],['react',{runtime:'automatic'}]]}).code;}
-catch(e){__err('Compile:\\n'+e.message);return;}
-out=out
-.replace(/from ['"]react\\/jsx-runtime['"]/g,"from 'https://esm.sh/react@18/jsx-runtime'")
-.replace(/from ['"]react-dom\\/client['"]/g,"from 'https://esm.sh/react-dom@18/client'")
-.replace(/from ['"]react-dom['"]/g,"from 'https://esm.sh/react-dom@18'")
-.replace(/from ['"]react['"]/g,"from 'https://esm.sh/react@18'");
-out+='\\n${mountScript}';
-var blob=new Blob([out],{type:'text/javascript'});
-var url=URL.createObjectURL(blob);
-import(url).catch(__err).finally(function(){URL.revokeObjectURL(url);});
-})();
-</script></body></html>`;
-}
-
-function buildVueSrcDoc(
-  code: string,
-  _filePath: string,
-  _resolveFile: ((from: string, href: string) => FileNode | null) | undefined,
-): string {
-  const src = JSON.stringify(code);
-  return `<!DOCTYPE html><html><head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-${PREVIEW_BASE_STYLES}
-${HTML_NAV_SCRIPT}${PREVIEW_ERROR_SCRIPT}
-</head><body>
-<div id="__r"></div>${PREVIEW_ERROR_EL}
-<script type="module">
-import{createApp}from'https://esm.sh/vue@3';
-import{parse,compileScript,compileTemplate,compileStyle}from'https://esm.sh/@vue/compiler-sfc@3';
-const ESM={vue:'https://esm.sh/vue@3'};
-function rw(c){return c.replace(/from ['"]vue['"]/g,"from '"+ESM.vue+"'");}
-async function bi(c){var b=new Blob([rw(c)],{type:'text/javascript'});var u=URL.createObjectURL(b);try{return await import(u);}finally{URL.revokeObjectURL(u);}}
-try{
-const{descriptor,errors}=parse(${src});
-if(errors.length)throw new Error(errors.map(e=>e.message).join('\\n'));
-for(const s of descriptor.styles){
-  const r=compileStyle({source:s.content,id:'__p',filename:'App.vue',scoped:!!s.scoped});
-  if(r.errors.length)throw r.errors[0];
-  const el=document.createElement('style');el.textContent=r.code;document.head.appendChild(el);
-}
-let comp={};
-if(descriptor.script||descriptor.scriptSetup){
-  const sb=compileScript(descriptor,{id:'__p'});
-  const m=await bi(sb.content);
-  comp=m.default||{};
-}
-if(descriptor.template){
-  const tr=compileTemplate({source:descriptor.template.content,id:'__p',filename:'App.vue',compilerOptions:{mode:'module'},scoped:descriptor.styles.some(s=>s.scoped)});
-  if(tr.errors.length)throw new Error(tr.errors.map(e=>typeof e==='string'?e:e.message).join('\\n'));
-  const tm=await bi(tr.code);
-  comp={...comp,render:tm.render};
-}
-createApp(comp).mount('#__r');
-}catch(e){__err(e);}
-</script></body></html>`;
-}
 
 function Breadcrumb({ file }: { file: FileNode }) {
   const parts = file.path.split("/");
@@ -210,7 +91,7 @@ function CodeBlock({ lang, code }: { lang: string; code: string }) {
       } catch {
         // language not in bundle — plain text fallback
       }
-    });
+    }).catch(() => {});
     return () => { cancelled = true; };
   }, [lang, code]);
 
@@ -258,12 +139,16 @@ export function Content({ file, onNavigate, resolveFile }: ContentProps) {
     let cancelled = false;
     highlighterReady.then((hl) => {
       if (cancelled) return;
-      const result = hl.codeToTokens(file.content, {
-        lang: langFromType(file.type),
-        theme: "dark-plus",
-      });
-      setTokenLines(result.tokens);
-    });
+      try {
+        const result = hl.codeToTokens(file.content, {
+          lang: langFromType(file.type),
+          theme: "dark-plus",
+        });
+        setTokenLines(result.tokens);
+      } catch {
+        setTokenLines(null);
+      }
+    }).catch(() => {});
     return () => {
       cancelled = true;
     };
@@ -276,8 +161,7 @@ export function Content({ file, onNavigate, resolveFile }: ContentProps) {
   // Listen for navigation postMessages from the HTML iframe.
   // Validates source so only our iframe can trigger navigation.
   useEffect(() => {
-    const previewableTypes = ["html", "tsx", "jsx", "vue"] as const;
-  if (!onNavigate || !previewableTypes.includes(file?.type as typeof previewableTypes[number])) return;
+    if (!onNavigate || file?.type !== "html") return;
 
     const handler = (e: MessageEvent) => {
       if (e.source !== iframeRef.current?.contentWindow) return;
@@ -300,7 +184,7 @@ export function Content({ file, onNavigate, resolveFile }: ContentProps) {
   }
 
   const lines = file.content.split("\n");
-  const isPreviewable = file.type === "md" || file.type === "html" || file.type === "tsx" || file.type === "jsx" || file.type === "vue";
+  const isPreviewable = file.type === "md" || file.type === "html";
 
   const tabBar = (
     <div className="vscode-tab-bar">
@@ -406,41 +290,6 @@ export function Content({ file, onNavigate, resolveFile }: ContentProps) {
     );
   }
 
-  if (file.type === "tsx" || file.type === "jsx") {
-    return (
-      <main className="vscode-content">
-        {tabBar}
-        <Breadcrumb file={file} />
-        {viewMode === "code" ? codeView : (
-          <iframe
-            ref={iframeRef}
-            className="vscode-html-area"
-            srcDoc={buildJsxSrcDoc(file.content, file.path, resolveFile)}
-            sandbox="allow-scripts"
-            title={file.name}
-          />
-        )}
-      </main>
-    );
-  }
-
-  if (file.type === "vue") {
-    return (
-      <main className="vscode-content">
-        {tabBar}
-        <Breadcrumb file={file} />
-        {viewMode === "code" ? codeView : (
-          <iframe
-            ref={iframeRef}
-            className="vscode-html-area"
-            srcDoc={buildVueSrcDoc(file.content, file.path, resolveFile)}
-            sandbox="allow-scripts"
-            title={file.name}
-          />
-        )}
-      </main>
-    );
-  }
 
   return (
     <main className="vscode-content">

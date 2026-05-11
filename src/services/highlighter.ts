@@ -18,8 +18,8 @@ export function langFromType(type: FileType): BundledLanguage | SpecialLanguage 
     case "css":    return "css";
     case "js":     return "javascript";
     case "ts":     return "typescript";
-    case "tsx":    return "tsx";
-    case "jsx":    return "jsx";
+    case "tsx":    return "typescript";
+    case "jsx":    return "javascript";
     case "md":     return "markdown";
     case "py":     return "python";
     case "json":   return "json";
@@ -35,8 +35,8 @@ export function langFromType(type: FileType): BundledLanguage | SpecialLanguage 
     case "sql":    return "sql";
     case "xml":    return "xml";
     case "toml":   return "toml";
-    case "vue":    return "vue";
-    case "svelte": return "svelte";
+    case "vue":    return "html";
+    case "svelte": return "text";
     default:       return "text";
   }
 }
