@@ -1,4 +1,4 @@
-![screenshot of the finished page](documentation/images/screenshot.png)
+![screenshot](./screenshot.png)
 
 # vscode_website
 
@@ -16,6 +16,8 @@ A custom Vite plugin reads everything in `src/open_folder/` at build time and bu
 npm run build    # type-check + production build
 npm run preview  # serve the build locally
 ```
+
+You might need to adjust the base path in the vite.config.ts file to fit your setup
 
 ## Stack
 
