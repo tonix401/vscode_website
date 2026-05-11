@@ -5,3 +5,9 @@ declare module "virtual:open-folder-files" {
   const tree: TreeNode[];
   export default tree;
 }
+
+declare module "virtual:open-folder-langs" {
+  import type { LanguageInput } from "@shikijs/types";
+  const langs: LanguageInput[];
+  export default langs;
+}

@@ -1,4 +1,4 @@
-![screenshot of the finished page](public/images/screenshot.png)
+![screenshot of the finished page](.docs/screenshot.png)
 
 # vscode_website
 

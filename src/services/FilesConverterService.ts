@@ -9,6 +9,44 @@ export interface OpenFolderPluginOptions {
   folderPath?: string;
 }
 
+const fileTypeToShikiLang: Partial<Record<FileType, string>> = {
+  html: "@shikijs/langs/html",
+  css: "@shikijs/langs/css",
+  js: "@shikijs/langs/javascript",
+  ts: "@shikijs/langs/typescript",
+  tsx: "@shikijs/langs/tsx",
+  jsx: "@shikijs/langs/jsx",
+  md: "@shikijs/langs/markdown",
+  py: "@shikijs/langs/python",
+  json: "@shikijs/langs/json",
+  yaml: "@shikijs/langs/yaml",
+  rs: "@shikijs/langs/rust",
+  go: "@shikijs/langs/go",
+  sh: "@shikijs/langs/bash",
+  php: "@shikijs/langs/php",
+  rb: "@shikijs/langs/ruby",
+  c: "@shikijs/langs/c",
+  cpp: "@shikijs/langs/cpp",
+  java: "@shikijs/langs/java",
+  sql: "@shikijs/langs/sql",
+  xml: "@shikijs/langs/xml",
+  toml: "@shikijs/langs/toml",
+  vue: "@shikijs/langs/vue",
+  svelte: "@shikijs/langs/svelte",
+};
+
+function collectFileTypes(nodes: TreeNode[]): Set<FileType> {
+  const types = new Set<FileType>();
+  for (const node of nodes) {
+    if (node.kind === "file") {
+      types.add(node.type);
+    } else {
+      for (const t of collectFileTypes(node.children)) types.add(t);
+    }
+  }
+  return types;
+}
+
 function getFileType(fileName: string): FileType {
   const ext = extname(fileName).slice(1).toLowerCase();
   switch (ext) {
@@ -85,20 +123,33 @@ export function openFolderPlugin(
 ): Plugin {
   const { folderPath = "./src/open_folder" } = options;
 
-  const virtualModuleId = "virtual:open-folder-files";
-  const resolvedId = "\0" + virtualModuleId;
+  const filesModuleId = "virtual:open-folder-files";
+  const langsModuleId = "virtual:open-folder-langs";
+  const resolvedFilesId = "\0" + filesModuleId;
+  const resolvedLangsId = "\0" + langsModuleId;
 
   return {
     name: "vite-plugin-open-folder",
 
     resolveId(id) {
-      if (id === virtualModuleId) return resolvedId;
+      if (id === filesModuleId) return resolvedFilesId;
+      if (id === langsModuleId) return resolvedLangsId;
     },
 
     load(id) {
-      if (id === resolvedId) {
-        const tree = readTree(resolve(folderPath));
+      const tree = readTree(resolve(folderPath));
+
+      if (id === resolvedFilesId) {
         return `export default ${JSON.stringify(tree)};`;
+      }
+
+      if (id === resolvedLangsId) {
+        const types = collectFileTypes(tree);
+        const pkgs = [...types]
+          .map((t) => fileTypeToShikiLang[t])
+          .filter((p): p is string => p !== undefined);
+        const imports = pkgs.map((pkg) => `  import(${JSON.stringify(pkg)})`).join(",\n");
+        return `export default [\n${imports}\n];`;
       }
     },
   };

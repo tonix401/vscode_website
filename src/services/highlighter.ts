@@ -1,17 +1,15 @@
-import { getSingletonHighlighter } from "shiki";
+import { createHighlighterCore } from "shiki/core";
+import { createJavaScriptRegexEngine } from "shiki/engine/javascript";
 import type { BundledLanguage, SpecialLanguage } from "shiki";
 import type { FileType } from "./types";
+import langs from "virtual:open-folder-langs";
 
 export type { ThemedToken } from "shiki";
 
-export const highlighterReady = getSingletonHighlighter({
-  themes: ["dark-plus"],
-  langs: [
-    "html", "css", "javascript", "typescript", "tsx", "jsx",
-    "markdown", "python", "json", "yaml", "rust", "go", "bash",
-    "php", "ruby", "c", "cpp", "java", "sql", "xml", "toml",
-    "vue", "svelte",
-  ],
+export const highlighterReady = createHighlighterCore({
+  themes: [import("@shikijs/themes/dark-plus")],
+  langs,
+  engine: createJavaScriptRegexEngine(),
 });
 
 export function langFromType(type: FileType): BundledLanguage | SpecialLanguage {
