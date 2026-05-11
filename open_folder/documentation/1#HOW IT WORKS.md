@@ -22,7 +22,11 @@ open_folder/
    └─ styles.css
 ```
 
-HTML and Markdown files also support in-app link navigation and relative CSS inlining — see [HTML.md](HTML.md) and [MARKDOWN.md](MARKDOWN.md) for details.
+HTML and Markdown files also support in-app link navigation and relative CSS inlining
+
+|                            |                                    |                                   |
+| -------------------------- | ---------------------------------- | --------------------------------- |
+| [Html formatting](HTML.md) | [Markdown formatting](MARKDOWN.md) | [Configuration](CONFIGURATION.md) |
 
 ## Supported file types
 

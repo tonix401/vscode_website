@@ -1,3 +1,3 @@
-No ~~debugging~~ needed, everything runs perfectly on the first try!
+We don't need ~~debugging~~, right?
 
-`code` goes brrrr!
+Yes! `code` goes ***brrrr!***
