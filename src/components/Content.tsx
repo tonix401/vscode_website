@@ -3,7 +3,10 @@ import "./Content.css";
 import type { ThemedToken } from "shiki";
 import { type FileNode } from "../services/types";
 import { highlighterReady, langFromType } from "../services/highlighter";
+import { langHintToFileType } from "../utils/fileTypes";
 import { SetiIcon } from "./SetiIcon";
+import chevronRightIcon from "@vscode/codicons/src/icons/chevron-right.svg";
+import openPreviewIcon from "@vscode/codicons/src/icons/open-preview.svg";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
@@ -57,7 +60,7 @@ function Breadcrumb({ file }: { file: FileNode }) {
         const isFile = i === parts.length - 1;
         return (
           <span key={i} className="vscode-breadcrumb-segment">
-            <span className="vscode-breadcrumb-sep">›</span>
+            <img src={chevronRightIcon} alt="" className="vscode-breadcrumb-sep" />
             {isFile && <SetiIcon type={file.type} size={16} />}
             <span className={isFile ? "vscode-breadcrumb-item vscode-breadcrumb-item--file" : "vscode-breadcrumb-item"}>
               {part}
@@ -66,6 +69,48 @@ function Breadcrumb({ file }: { file: FileNode }) {
         );
       })}
     </div>
+  );
+}
+
+function CodeBlock({ lang, code }: { lang: string; code: string }) {
+  const [tokenLines, setTokenLines] = useState<ThemedToken[][] | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    const fileType = langHintToFileType(lang);
+    if (fileType === "unsupported") return;
+    highlighterReady.then((hl) => {
+      if (cancelled) return;
+      try {
+        const result = hl.codeToTokens(code, {
+          lang: langFromType(fileType),
+          theme: "dark-plus",
+        });
+        setTokenLines(result.tokens);
+      } catch {
+        // language not in bundle — plain text fallback
+      }
+    });
+    return () => { cancelled = true; };
+  }, [lang, code]);
+
+  const lines = code.trimEnd().split("\n");
+
+  return (
+    <code>
+      {lines.map((line, i) => {
+        const tokens = tokenLines?.[i];
+        return (
+          <div key={i}>
+            {tokens && tokens.length > 0
+              ? tokens.map((token, j) => (
+                  <span key={j} style={tokenStyle(token)}>{token.content}</span>
+                ))
+              : (line || " ")}
+          </div>
+        );
+      })}
+    </code>
   );
 }
 
@@ -148,7 +193,7 @@ export function Content({ file, onNavigate, resolveFile }: ContentProps) {
           onClick={() => setViewMode(v => v === "preview" ? "code" : "preview")}
           title={viewMode === "preview" ? "Show source code" : "Open preview"}
         >
-          <img src="/images/open-preview.svg" alt="Open preview" width={16} height={16} />
+          <img src={openPreviewIcon} alt="Open preview" width={16} height={16} />
         </button>
       )}
     </div>
@@ -200,6 +245,13 @@ export function Content({ file, onNavigate, resolveFile }: ContentProps) {
                         {children}
                       </a>
                     );
+                  },
+                  code({ className, children, ...props }) {
+                    const match = /language-(\w+)/.exec(className ?? "");
+                    if (match) {
+                      return <CodeBlock lang={match[1]} code={String(children)} />;
+                    }
+                    return <code className={className} {...props}>{children}</code>;
                   },
                 }}
               >

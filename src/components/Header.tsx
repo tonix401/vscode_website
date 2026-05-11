@@ -1,16 +1,19 @@
 import "./Header.css";
+import { searchBarText } from "virtual:open-folder-config";
+import { resolveSearchBarText } from "../utils/searchBarText";
 
 const MENU_ITEMS = ["File", "Edit", "Selection", "View", "Go", "Run", "Terminal", "Help"];
 
 interface HeaderProps {
   fileName?: string;
+  filePath?: string;
 }
 
-export function Header({ fileName }: HeaderProps) {
+export function Header({ fileName, filePath }: HeaderProps) {
   return (
     <header className="vscode-header">
       <div className="vscode-header-left">
-        <img src="/images/vscode-icon.svg" alt="VSCode" className="vscode-appicon" />
+        <svg className="vscode-appicon" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="5" fill="#007ACC" /></svg>
         <nav className="vscode-menu-bar">
           {MENU_ITEMS.map((item) => (
             <span key={item} className="vscode-menu-item">{item}</span>
@@ -25,7 +28,7 @@ export function Header({ fileName }: HeaderProps) {
             <line x1="10" y1="10" x2="14" y2="14" />
           </svg>
           <span className="vscode-title-search-text">
-            {fileName ? `${fileName} — Open Symbol...` : "Search files by name (⌘P)"}
+            {resolveSearchBarText(searchBarText, fileName, filePath)}
           </span>
         </div>
       </div>

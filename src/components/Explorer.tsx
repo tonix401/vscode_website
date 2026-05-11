@@ -2,6 +2,8 @@ import { useState } from "react";
 import "./Explorer.css";
 import { type FileNode, type FolderNode, type TreeNode } from "../services/types";
 import { SetiIcon } from "./SetiIcon";
+import { rootFolderName } from "virtual:open-folder-config";
+import chevronRightIcon from "@vscode/codicons/src/icons/chevron-right.svg";
 
 interface ExplorerProps {
   nodes: TreeNode[];
@@ -41,8 +43,8 @@ export function Explorer({ nodes, selectedFile, onSelect }: ExplorerProps) {
       <div className="vscode-explorer-heading">EXPLORER</div>
       <ul className="vscode-file-list">
         <li className="vscode-folder-item" onClick={() => toggle("__root__")}>
-          <img src="/images/forward-tb.png" alt="" className={`vscode-caret${rootOpen ? " vscode-caret--open" : ""}`} />
-          <span className="vscode-file-name">WEBSITE</span>
+          <img src={chevronRightIcon} alt="" className={`vscode-caret${rootOpen ? " vscode-caret--open" : ""}`} />
+          <span className="vscode-file-name">{rootFolderName}</span>
         </li>
         {rootOpen &&
           [...nodes]
@@ -88,7 +90,7 @@ function TreeItem({ node, path, depth, selectedFile, onSelect, openFolders, onTo
         style={{ paddingLeft: `${indent + 4}px` }}
         onClick={() => onSelect(node)}
       >
-        <SetiIcon type={node.type} />
+        <SetiIcon type={node.type} name={node.name} />
         <span className="vscode-file-name">{node.name}</span>
       </li>
     );
@@ -118,7 +120,7 @@ function FolderItem({ node, path, depth, selectedFile, onSelect, openFolders, on
         style={{ paddingLeft: `${indent + 4}px` }}
         onClick={() => onToggle(path)}
       >
-        <img src="/images/forward-tb.png" alt="" className={`vscode-caret${isOpen ? " vscode-caret--open" : ""}`} />
+        <img src={chevronRightIcon} alt="" className={`vscode-caret${isOpen ? " vscode-caret--open" : ""}`} />
         <span className="vscode-file-name">{node.name}</span>
       </li>
       {isOpen &&

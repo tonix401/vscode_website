@@ -11,3 +11,8 @@ declare module "virtual:open-folder-langs" {
   const langs: LanguageInput[];
   export default langs;
 }
+
+declare module "virtual:open-folder-config" {
+  export const searchBarText: string;
+  export const rootFolderName: string;
+}

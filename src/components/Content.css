@@ -108,12 +108,11 @@
 }
 
 .vscode-breadcrumb-sep {
-  color: var(--fg-dim);
-  font-size: 24px;
-  padding: 0 3px;
-  line-height: 22px;
-  display: inline-flex;
-  align-items: center;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  filter: invert(1) opacity(0.6);
+  margin: 0 1px;
 }
 
 .vscode-editor-area {

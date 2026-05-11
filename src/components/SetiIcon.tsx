@@ -3,11 +3,14 @@ import type { FileType } from "../services/types";
 
 interface SetiIconProps {
   type: FileType;
+  name?: string;
   size?: number;
 }
 
-export function SetiIcon({ type, size = 20 }: SetiIconProps) {
-  const { char, color } = fileIconData(type);
+export function SetiIcon({ type, name, size = 20 }: SetiIconProps) {
+  const { char, color } = name === "LICENCE.md"
+    ? { char: "", color: "#cbcb41" }
+    : fileIconData(type);
   return (
     <span
       aria-hidden="true"

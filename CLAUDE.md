@@ -45,3 +45,25 @@ VSCode icons are in `public/images/` and referenced as `/images/<name>`. The pro
 ### Styling
 
 All component styles are in `src/App.css` using CSS custom properties defined at `:root` (colours, font, line height). `src/index.css` contains only the global box-sizing reset and `html/body/root` height rules. There is no CSS module or styled-components setup — class names are prefixed `vscode-` by convention.
+
+## Keeping documentation in sync
+
+When changing any of the following, update **all** listed locations together:
+
+### Known placeholders (`$open_file`, `$root_folder_name`, etc.)
+- `src/utils/pluginHelpers.ts` — `KNOWN_PLACEHOLDERS` array
+- `src/utils/pluginHelpers.ts` — `resolveConfigSearchBarText()` (add/remove build-time replacement)
+- `src/utils/searchBarText.ts` — `resolveSearchBarText()` (add/remove runtime replacement)
+- `src/services/FilesConverterService.ts` — the unknown-placeholders warning text in `buildStart()`
+- `documentation/CONFIGURATION.md` — the placeholders table under `searchBarText`
+
+### Plugin options (`folderPath`, `searchBarText`, `faviconPath`, etc.)
+- `src/services/FilesConverterService.ts` — `OpenFolderPluginOptions` interface
+- `src/services/FilesConverterService.ts` — destructuring defaults in `openFolderPlugin()`
+- `src/services/FilesConverterService.ts` — validation warnings/errors in `buildStart()`
+- `documentation/CONFIGURATION.md` — the Options section (add/remove/update the option's entry)
+
+### Supported file types (`.py`, `.rs`, `.vue`, etc.)
+- `src/services/types.ts` — `FileType` union type
+- `src/services/FilesConverterService.ts` — `getFileType()` switch statement
+- `src/services/FilesConverterService.ts` — `fileTypeToShikiLang` map

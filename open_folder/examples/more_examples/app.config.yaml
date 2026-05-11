@@ -1,0 +1,60 @@
+server:
+  host: 0.0.0.0
+  port: 5173
+  ssl:
+    enabled: false
+    cert_path: /etc/ssl/certs/server.crt
+    key_path: /etc/ssl/private/server.key
+
+database:
+  type: postgresql
+  connection:
+    host: localhost
+    port: 5432
+    username: app_user
+    password: ${DB_PASSWORD}
+    database: app_db
+  pool:
+    min: 5
+    max: 20
+    idle_timeout: 30000
+
+logging:
+  level: info
+  format: json
+  outputs:
+    - stdout
+    - file:
+        path: ./logs/app.log
+        max_size: 10mb
+        max_files: 5
+
+features:
+  syntax_highlighting: true
+  dark_mode: true
+  search:
+    enabled: true
+    max_results: 100
+    timeout_ms: 5000
+
+cache:
+  ttl: 3600
+  providers:
+    - name: redis
+      host: localhost
+      port: 6379
+      db: 0
+      password: ${REDIS_PASSWORD}
+
+security:
+  cors:
+    allowed_origins:
+      - http://localhost:3000
+      - https://example.com
+    allowed_methods:
+      - GET
+      - POST
+      - OPTIONS
+  headers:
+    X-Frame-Options: DENY
+    X-Content-Type-Options: nosniff

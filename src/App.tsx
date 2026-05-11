@@ -47,18 +47,30 @@ function PlaceholderPanel({ title, message }: { title: string; message: string }
   );
 }
 
+const STORAGE_KEY = "vscode-website:selectedFilePath";
+
 function App() {
-  const [selectedFile, setSelectedFile] = useState<FileNode | null>(
-    () => findFirstFile(folderFiles),
-  );
+  const [selectedFile, setSelectedFile] = useState<FileNode | null>(() => {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      const found = findFileByPath(folderFiles, saved);
+      if (found) return found;
+    }
+    return findFirstFile(folderFiles);
+  });
   const [activePanel, setActivePanel] = useState<Panel>("explorer");
+
+  const handleSelect = useCallback((file: FileNode) => {
+    localStorage.setItem(STORAGE_KEY, file.path);
+    setSelectedFile(file);
+  }, []);
 
   const handleNavigate = useCallback((href: string) => {
     if (!selectedFile) return;
     const resolved = resolvePath(selectedFile.path, href);
     const target = findFileByPath(folderFiles, resolved);
-    if (target) setSelectedFile(target);
-  }, [selectedFile]);
+    if (target) handleSelect(target);
+  }, [selectedFile, handleSelect]);
 
   const resolveFile = useCallback((fromPath: string, href: string) => {
     return findFileByPath(folderFiles, resolvePath(fromPath, href));
@@ -66,7 +78,7 @@ function App() {
 
   return (
     <div className="vscode-layout">
-      <Header fileName={selectedFile?.name} />
+      <Header fileName={selectedFile?.name} filePath={selectedFile?.path} />
       <div className="vscode-body">
         <ActivityBar activePanel={activePanel} onPanelChange={setActivePanel} />
         <Sidebar>
@@ -74,7 +86,7 @@ function App() {
             <Explorer
               nodes={folderFiles}
               selectedFile={selectedFile}
-              onSelect={setSelectedFile}
+              onSelect={handleSelect}
             />
           )}
           {activePanel === "search" && (

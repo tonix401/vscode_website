@@ -1,0 +1,45 @@
+{
+  "name": "vscode-example-viewer",
+  "version": "1.0.0",
+  "description": "A VSCode-like file viewer",
+  "author": {
+    "name": "Developer",
+    "email": "dev@example.com"
+  },
+  "license": "MIT",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "lint": "eslint . --ext .ts,.tsx"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "shiki": "^0.14.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0",
+    "typescript": "^5.0.0",
+    "vite": "^4.0.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/example/vscode-viewer.git"
+  },
+  "keywords": [
+    "vscode",
+    "viewer",
+    "syntax",
+    "highlighting",
+    "code"
+  ],
+  "bugs": {
+    "url": "https://github.com/example/vscode-viewer/issues"
+  },
+  "homepage": "https://github.com/example/vscode-viewer#readme"
+}
