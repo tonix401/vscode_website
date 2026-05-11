@@ -7,8 +7,7 @@ This is a **bold** statement and this is *italic*. You can also combine **_both_
 Links to other files in the viewer work just like normal markdown links — click
 them and the app navigates without leaving the page.
 
-- [Main documentation page](./CONFIGURATION.md)
-- [Some interesting examples](../examples/markdown.md)
+- [Main documentation page](../documentation/1#HOW%20IT%20WORKS.md)
 
 ## Code
 

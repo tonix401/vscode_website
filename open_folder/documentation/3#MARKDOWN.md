@@ -41,4 +41,4 @@ Inline HTML tags (`<div>`, `<span style="...">`, etc.) are escaped and shown as 
 
 ### No emoji shortcodes
 
-`:tada:` and similar shortcodes are not expanded. Use Unicode emoji directly.
+`:tada:` and similar shortcodes are not expanded. Use Unicode emoji directly. 😝
