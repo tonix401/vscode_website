@@ -13,11 +13,20 @@ A custom Vite plugin reads everything in `src/open_folder/` at build time and bu
 ## Getting started
 
 ```bash
-npm run build    # type-check + production build
-npm run preview  # serve the build locally
+cd vscode_website  # go into the folder
+npm install        # install dependencies
+```
+then
+```bash
+npm run build      # type-check + production build
+npm run preview    # serve the build locally
+```
+or
+```bash
+npm run dev        # run the development server to get life updates, when you change anything
 ```
 
-You might need to adjust the base path in the vite.config.ts file to fit your setup
+You ***need*** to adjust the base path in the vite.config.ts file to fit your setup
 
 ## Demo and Documentation
 
